@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+@theme {
+  /* User Theme Colors */
+  --color-primary: #2497B2;
+  --color-primary-dark: #1d7d95;
+  --color-secondary: #F2B81F;
+
+  --color-background-light: #F5F7FA;
+  --color-background-dark: #21242c;
+
+  --color-surface-light: #FFFFFF;
+  --color-surface-dark: #2c303b;
+
+  --color-text-main: #1F1F1F;
+  --color-text-sub: #8A8A8A;
+
+  --color-card-light: #FFFFFF;
+  --color-card-dark: #2c303b;
+
+  /* Status Colors */
+  --color-status-active-text: #2E7D32;
+  --color-status-active-bg: #E8F5E9;
+  --color-status-urgent-text: #D86526;
+  --color-status-urgent-bg: #FBE9E7;
+  --color-status-error-text: #D32F2F;
+
+  /* Shadows */
+  --shadow-soft: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+  --shadow-glow: 0 0 15px rgba(36, 151, 178, 0.3);
+  --shadow-float: 0 10px 40px -10px rgba(0, 0, 0, 0.08);
+  --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+
+  /* Fonts */
+  --font-display: var(--font-manrope), sans-serif;
+}
+
+:root {
+  --background: #F5F7FA;
+  --foreground: #1F1F1F;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #21242c;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
