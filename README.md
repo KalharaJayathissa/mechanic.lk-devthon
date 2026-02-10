@@ -7,7 +7,7 @@
 
 ---
 
-## � Setup Instructions
+##  Setup Instructions
 
 ### Prerequisites
 
@@ -63,7 +63,7 @@ npm start
 
 ---
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 ### Frontend
 
@@ -88,7 +88,7 @@ npm start
 
 ---
 
-## 👥 Team Members
+##  Team Members
 
 | Name | Role |
 |---|---|
