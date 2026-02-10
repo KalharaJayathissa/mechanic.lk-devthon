@@ -19,7 +19,7 @@ export default function ParkingDashboard() {
         const storedUser = localStorage.getItem('user');
         if (storedUser) setUser(JSON.parse(storedUser));
 
-        fetch('https://mechaniclk-devthon-production.up.railway.app/api/parking/stats', {
+        fetch('http://localhost:5000/api/parking/stats', {
             headers: { Authorization: `Bearer ${token}` }
         })
             .then(res => res.json())

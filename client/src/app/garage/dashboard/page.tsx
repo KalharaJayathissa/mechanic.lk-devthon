@@ -17,7 +17,7 @@ export default function GarageDashboard() {
             if (storedUser) {
                 setUser(JSON.parse(storedUser));
             } else {
-                fetch('https://mechaniclk-devthon-production.up.railway.app/api/users/profile', {
+                fetch('http://localhost:5000/api/users/profile', {
                     headers: { Authorization: `Bearer ${token}` }
                 })
                     .then(res => res.json())

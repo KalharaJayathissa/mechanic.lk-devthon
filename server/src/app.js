@@ -24,10 +24,7 @@ const app = express();
 app.use(helmet({
     crossOriginResourcePolicy: { policy: 'cross-origin' }
 }));
-app.use(cors({
-    origin: ['https://mechaniclk.netlify.app'],
-    credentials: true
-}));
+app.use(cors());
 app.use(express.json());
 app.use(morgan('dev'));
 
@@ -40,6 +37,7 @@ app.use('/api/auctions', require('./routes/auctionRoutes'));
 app.use('/api/service-requests', require('./routes/serviceRequestRoutes'));
 app.use('/api/bookings', require('./routes/bookingRoutes'));
 app.use('/api/payments', require('./routes/paymentRoutes'));
+app.use('/api/vehicles', require('./routes/vehicleRoutes'));
 
 app.use('/uploads', express.static('uploads'));
 
