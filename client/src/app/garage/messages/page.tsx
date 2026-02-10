@@ -1,6 +1,6 @@
 "use client";
 
-import { GarageBottomNav } from '@/components/ui/GarageBottomNav';
+import { BottomNav } from '@/components/ui/BottomNav';
 
 export default function MessagesPage() {
     return (
@@ -16,7 +16,7 @@ export default function MessagesPage() {
                     Chats with drivers regarding your bids and services will appear here.
                 </p>
             </div>
-            <GarageBottomNav />
+            <BottomNav />
         </div>
     );
 }

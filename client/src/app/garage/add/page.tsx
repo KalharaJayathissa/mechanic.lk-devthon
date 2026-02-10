@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { BottomNav } from '@/components/ui/BottomNav';
 
 export default function AddGaragePage() {
     const router = useRouter();
@@ -320,6 +321,7 @@ export default function AddGaragePage() {
                     </button>
                 </form>
             </main>
+            <BottomNav />
         </div>
     );
 }

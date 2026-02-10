@@ -1,57 +1,101 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 
 export function BottomNav() {
     const pathname = usePathname();
     const router = useRouter();
+    const [role, setRole] = useState<string | null>(null);
 
-    const navItems = [
+    useEffect(() => {
+        // We can check role from local storage or infer from path
+        // Checking path is faster for immediate rendering
+        if (pathname.startsWith('/garage')) {
+            setRole('garage');
+        } else if (pathname.startsWith('/driver')) {
+            setRole('driver');
+        } else if (pathname.startsWith('/parking-owner')) {
+            setRole('parking-owner');
+        }
+    }, [pathname]);
+
+    const driverNavItems = [
         { icon: 'home', label: 'Home', path: '/driver/dashboard' },
         { icon: 'car_repair', label: 'Mechanic', path: '/driver/services' },
-        { icon: 'sos', label: 'Emergency', path: '/driver/emergency', isFab: true },
+        { icon: 'gavel', label: 'Auctions', path: '/driver/auction' },
         { icon: 'local_parking', label: 'Parking', path: '/driver/parking' },
         { icon: 'person', label: 'Profile', path: '/driver/profile' },
     ];
 
+    const garageNavItems = [
+        { icon: 'home', label: 'Home', path: '/garage/dashboard' },
+        { icon: 'car_repair', label: 'Repairs', path: '/garage/repairs' }, // Repairs / Auctions
+        { icon: 'add', label: '', path: '/garage/add', isMain: true }, // Large Plus Button
+        { icon: 'chat', label: 'Messages', path: '/garage/messages' },
+        { icon: 'person', label: 'Profile', path: '/garage/profile' },
+    ];
+
+    const parkingNavItems = [
+        { icon: 'local_parking', label: 'Dashboard', path: '/parking-owner/dashboard' },
+        { icon: 'currency_exchange', label: 'Rates', path: '/parking-owner/rates' },
+        { icon: 'history', label: 'History', path: '/parking-owner/history' },
+        { icon: 'person', label: 'Profile', path: '/parking-owner/profile' },
+    ];
+
+    // Decide which items to show
+    let navItems = driverNavItems;
+    if (role === 'garage') navItems = garageNavItems;
+    if (role === 'parking-owner') navItems = parkingNavItems;
+
+    // Only show on relevant pages
+    if (!role) return null;
+
     return (
         <div className="fixed bottom-0 left-0 z-50 w-full border-t border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-[#21242c]/95 backdrop-blur-lg pb-safe">
-            <div className="flex items-center justify-between px-2 py-2">
+            <div className={`flex items-center justify-between px-6 py-3 ${role === 'garage' || role === 'parking-owner' ? 'justify-around' : ''}`}>
                 {navItems.map((item) => {
-                    const isActive = pathname === item.path;
+                    const isActive = pathname === item.path || (item.path !== (role === 'garage' ? '/garage/dashboard' : role === 'parking-owner' ? '/parking-owner/dashboard' : '/driver/dashboard') && pathname.startsWith(item.path));
 
-                    if (item.isFab) {
+                    // Special rendering for the "Main" button (Plus button)
+                    if (item.isMain) {
                         return (
-                            <button
-                                key={item.path}
-                                onClick={() => router.push(item.path)}
-                                className="relative -top-6 flex flex-col items-center justify-center"
-                            >
-                                <div className="h-14 w-14 rounded-full bg-red-500 shadow-lg shadow-red-500/40 flex items-center justify-center text-white transition-transform active:scale-95">
-                                    <span className="material-symbols-outlined text-[32px]">{item.icon}</span>
-                                </div>
-                                <span className="text-[10px] font-bold text-red-500 mt-1">{item.label}</span>
-                            </button>
-                        )
+                            <div key={item.path} className="relative -top-5">
+                                <button
+                                    onClick={() => router.push(item.path)}
+                                    className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-glow hover:bg-primary/90 hover:scale-105 active:scale-95 transition-all"
+                                >
+                                    <span className="material-symbols-outlined text-[32px]">
+                                        {item.icon}
+                                    </span>
+                                </button>
+                            </div>
+                        );
                     }
 
                     return (
                         <button
                             key={item.path}
                             onClick={() => router.push(item.path)}
-                            className={`flex flex-col items-center gap-1 p-2 min-w-[64px] transition-colors group ${isActive ? 'text-primary dark:text-primary' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'
+                            className={`flex flex-col items-center gap-1.5 transition-colors group ${isActive
+                                    ? 'text-primary dark:text-white'
+                                    : 'text-text-sub hover:text-primary dark:text-gray-400 dark:hover:text-white'
                                 }`}
                         >
-                            <span className={`material-symbols-outlined text-[26px] transition-transform ${isActive ? 'fill-current' : 'group-hover:scale-110'}`}>
+                            <span className={`material-symbols-outlined text-[26px] transition-transform ${isActive ? 'font-bold' : 'group-hover:scale-110'}`}>
                                 {item.icon}
                             </span>
-                            <span className="text-[10px] font-bold tracking-wide">{item.label}</span>
+                            {item.label && (
+                                <span className="text-[10px] font-bold tracking-wide">{item.label}</span>
+                            )}
                         </button>
                     );
                 })}
             </div>
-            <div className="h-4 w-full"></div>
+            {/* Add extra padding at bottom if needed, but 'pb-safe' usually handles it. 
+                For the floating button, we might need a bit more space to avoid overlap if content scrolls behind.
+             */}
+            <div className="h-5 w-full"></div>
         </div>
     );
 }

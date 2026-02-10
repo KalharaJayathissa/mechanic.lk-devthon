@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ParkingBottomNav } from '@/components/ui/ParkingBottomNav';
+import { BottomNav } from '@/components/ui/BottomNav';
 
 export default function ParkingDashboard() {
     const router = useRouter();
@@ -103,7 +103,7 @@ export default function ParkingDashboard() {
                 </div>
             </main>
 
-            <ParkingBottomNav />
+            <BottomNav />
         </div>
     );
 }

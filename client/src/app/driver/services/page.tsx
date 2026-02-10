@@ -3,14 +3,16 @@
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { BottomNav } from '@/components/ui/BottomNav';
+import { ServiceCard } from '@/components/features/ServiceCard';
 
 // Dynamically import Map
 const Map = dynamic(() => import('@/components/ui/Map'), {
     ssr: false,
-    loading: () => <div className="h-[200px] w-full bg-gray-100 dark:bg-gray-800 animate-pulse rounded-2xl mb-4"></div>
+    loading: () => <div className="h-full w-full bg-gray-100 dark:bg-gray-800 animate-pulse flex items-center justify-center text-gray-400">Loading Map...</div>
 });
 
 export default function ServicesPage() {
+    const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
     const [mechanics, setMechanics] = useState<any[]>([]);
     const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
     const [loading, setLoading] = useState(true);
@@ -70,66 +72,80 @@ export default function ServicesPage() {
     }));
 
     return (
-        <div className="min-h-screen bg-background-light dark:bg-background-dark pb-24">
-            <div className="fixed top-0 z-30 w-full bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md px-6 py-4 border-b border-gray-100 dark:border-gray-800 shadow-sm">
-                <h1 className="text-xl font-black text-text-main dark:text-white">Find Mechanic</h1>
+        <div className="relative h-screen w-full bg-background-light dark:bg-background-dark overflow-hidden flex flex-col">
+            {/* Header */}
+            <div className="absolute top-0 z-20 w-full px-6 pt-6 pb-2 bg-gradient-to-b from-background-light/90 to-transparent dark:from-background-dark/90 pointer-events-none">
+                <div className="pointer-events-auto flex items-center gap-3 mb-4">
+                    <div className="flex-1 bg-white dark:bg-card-dark rounded-full shadow-soft flex items-center p-1 pr-4 border border-gray-100 dark:border-gray-800">
+                        <span className="material-symbols-outlined text-gray-400 ml-3 mr-2">search</span>
+                        <input
+                            type="text"
+                            placeholder="Find mechanics, garages..."
+                            className="flex-1 bg-transparent border-none focus:ring-0 text-sm font-medium text-text-main dark:text-white placeholder:text-text-sub"
+                        />
+                    </div>
+                    <button className="h-10 w-10 rounded-full bg-white dark:bg-card-dark shadow-soft flex items-center justify-center text-text-main dark:text-white border border-gray-100 dark:border-gray-800">
+                        <span className="material-symbols-outlined">tune</span>
+                    </button>
+                </div>
+
+                {/* Toggle View */}
+                <div className="pointer-events-auto flex p-1 bg-white/80 dark:bg-card-dark/80 backdrop-blur-md rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 w-fit mx-auto">
+                    <button
+                        onClick={() => setViewMode('map')}
+                        className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${viewMode === 'map' ? 'bg-primary text-white shadow-md' : 'text-text-sub hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'}`}
+                    >
+                        Map
+                    </button>
+                    <button
+                        onClick={() => setViewMode('list')}
+                        className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${viewMode === 'list' ? 'bg-primary text-white shadow-md' : 'text-text-sub hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'}`}
+                    >
+                        List
+                    </button>
+                </div>
             </div>
 
-            <main className="pt-24 px-6">
-                {/* Map Section */}
-                <div className="mb-6">
+            {/* Content Area */}
+            <div className="flex-1 relative mt-[130px]">
+                {/* Map View */}
+                <div className={`absolute inset-0 transition-opacity duration-300 ${viewMode === 'map' ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'}`}>
                     {userLocation && (
                         <Map
                             center={userLocation}
                             markers={mapMarkers}
-                            height="200px"
+                            height="100%"
                         />
                     )}
                 </div>
 
-                {/* List Section */}
-                <h2 className="text-lg font-bold text-text-main dark:text-white mb-4">Nearby Specialists ({mechanics.length})</h2>
-
-                <div className="grid gap-4">
+                {/* List View */}
+                <div className={`absolute inset-0 overflow-y-auto px-6 pb-24 transition-opacity duration-300 ${viewMode === 'list' ? 'opacity-100 z-10 bg-background-light dark:bg-background-dark' : 'opacity-0 z-0 pointer-events-none'}`}>
                     {loading ? (
-                        <p className="text-center text-gray-500">Scanning area...</p>
+                        <p className="text-center text-gray-500 mt-10">Scanning area...</p>
                     ) : mechanics.length === 0 ? (
-                        <p className="text-center text-gray-500">No mechanics found nearby.</p>
+                        <div className="text-center mt-20 opacity-60">
+                            <span className="material-symbols-outlined text-4xl mb-2 sm:text-5xl">location_off</span>
+                            <p>No mechanics found nearby.</p>
+                        </div>
                     ) : (
-                        mechanics.map((mech) => (
-                            <div key={mech._id} className="bg-white dark:bg-card-dark rounded-2xl p-4 shadow-soft border border-gray-100 dark:border-gray-800 flex gap-4">
-                                <div className="h-16 w-16 rounded-xl bg-gray-200 dark:bg-gray-700 overflow-hidden flex-shrink-0">
-                                    {mech.photos && mech.photos.length > 0 ? (
-                                        <img src={`http://localhost:5000${mech.photos[0]}`} className="h-full w-full object-cover" alt="Garage" />
-                                    ) : (
-                                        <div className="h-full w-full flex items-center justify-center text-gray-400 bg-gray-100 dark:bg-gray-800">
-                                            <span className="material-symbols-outlined">storefront</span>
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="flex-1">
-                                    <div className="flex justify-between items-start">
-                                        <h3 className="font-bold text-text-main dark:text-white line-clamp-1">{mech.businessName}</h3>
-                                        <span className="flex items-center text-xs font-bold text-yellow-500">
-                                            <span className="material-symbols-outlined text-[14px] mr-0.5">star</span>
-                                            4.8
-                                        </span>
-                                    </div>
-                                    <p className="text-xs text-text-sub dark:text-gray-400 line-clamp-2 mt-1 mb-2">{mech.description}</p>
-
-                                    <div className="flex flex-wrap gap-2">
-                                        {mech.services?.slice(0, 2).map((s: any, i: number) => (
-                                            <span key={i} className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-md text-[10px] font-bold text-text-sub dark:text-gray-300">
-                                                {s.name}
-                                            </span>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                        ))
+                        <div className="grid gap-4 pt-2">
+                            {mechanics.map((mech) => (
+                                <ServiceCard
+                                    key={mech._id}
+                                    title={mech.businessName}
+                                    providerName={mech.user?.name || 'Mechanic'}
+                                    price={mech.services?.[0]?.price || 0} // Display first service price or 0
+                                    rating={mech.rating || 4.8} // Use rating or default
+                                    timeEstimate={mech.services?.[0]?.estimatedTime ? `${mech.services[0].estimatedTime} mins` : '15 mins'}
+                                    distance="2.5km" // Placeholder for now
+                                    tags={mech.services?.map((s: any) => s.name).slice(0, 3)}
+                                />
+                            ))}
+                        </div>
                     )}
                 </div>
-            </main>
+            </div>
 
             <BottomNav />
         </div>

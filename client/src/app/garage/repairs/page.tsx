@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { GarageBottomNav } from '@/components/ui/GarageBottomNav';
+import { BottomNav } from '@/components/ui/BottomNav';
 
 export default function GarageAuctionFeedPage() {
     const router = useRouter();
@@ -91,7 +91,7 @@ export default function GarageAuctionFeedPage() {
                 )}
             </main>
 
-            <GarageBottomNav />
+            <BottomNav />
         </div>
     );
 }

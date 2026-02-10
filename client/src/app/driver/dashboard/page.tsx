@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { BottomNav } from '@/components/ui/BottomNav';
 
 export default function DriverDashboard() {
     const router = useRouter();
+    const pathname = usePathname();
     const [user, setUser] = useState<{ name: string; email: string } | null>(null);
 
     useEffect(() => {
@@ -31,74 +32,113 @@ export default function DriverDashboard() {
     }, [router]);
 
     return (
-        <div className="relative min-h-screen w-full bg-background-light dark:bg-background-dark pb-24">
-            {/* Header */}
-            <div className="fixed top-0 z-30 w-full bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md px-6 py-4 border-b border-gray-100 dark:border-gray-800 shadow-sm flex items-center justify-between">
-                <div>
-                    <p className="text-xs font-bold text-text-sub dark:text-gray-400 uppercase tracking-wider">Good Morning</p>
-                    <h1 className="text-xl font-black text-text-main dark:text-white leading-tight">{user?.name || 'Driver'}</h1>
-                </div>
-                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                    <span className="material-symbols-outlined">person</span>
-                </div>
-            </div>
-
-            <main className="pt-24 px-6 space-y-6">
-                {/* Quick Actions Grid */}
-                <div className="grid grid-cols-2 gap-4">
-                    <button
-                        onClick={() => router.push('/driver/parking')}
-                        className="flex flex-col items-center justify-center gap-3 rounded-2xl bg-white dark:bg-card-dark p-6 shadow-soft hover:shadow-lg transition-all active:scale-95 group"
-                    >
-                        <div className="h-12 w-12 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform">
-                            <span className="material-symbols-outlined text-2xl">local_parking</span>
-                        </div>
-                        <span className="text-sm font-bold text-text-main dark:text-white">Find Parking</span>
-                    </button>
-
-                    <button
-                        onClick={() => router.push('/driver/services')}
-                        className="flex flex-col items-center justify-center gap-3 rounded-2xl bg-white dark:bg-card-dark p-6 shadow-soft hover:shadow-lg transition-all active:scale-95 group"
-                    >
-                        <div className="h-12 w-12 rounded-full bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center text-orange-600 dark:text-orange-400 group-hover:scale-110 transition-transform">
-                            <span className="material-symbols-outlined text-2xl">car_repair</span>
-                        </div>
-                        <span className="text-sm font-bold text-text-main dark:text-white">Mechanics</span>
-                    </button>
-
-                    <button
-                        onClick={() => router.push('/driver/auction')}
-                        className="col-span-2 flex items-center justify-between rounded-2xl bg-gradient-to-r from-purple-600 to-purple-800 p-6 text-white shadow-glow hover:shadow-lg transition-all active:scale-[0.98]"
-                    >
-                        <div className="flex items-center gap-4">
-                            <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm">
-                                <span className="material-symbols-outlined text-xl">gavel</span>
+        <div className="bg-background-light dark:bg-background-dark text-text-main dark:text-gray-100 font-display transition-colors duration-200 antialiased min-h-screen flex flex-col pb-24">
+            {/* Header Section */}
+            <div className="pt-8 px-6 pb-4">
+                <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                        <div className="relative">
+                            <div className="h-16 w-16 rounded-full bg-cover bg-center border-2 border-white dark:border-gray-700 shadow-md" style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuDyCKmyWKr7ViSy9-Eda6RQtk68Sy5bB7-E_8m3EHE4s2I0259V41ouausLUBuDMZyIIJJMasfgQWftjNIB7GbN5hME-tz3aAv1lONZsZ7HUEaqd8wxdfp3q0kvHKlXX2X7zATP6tr_2sW3yK_C-1I8qMQmHw6H8ji07e2pDltuvIQUJLaJ24_c3NkEGVtDKwzGWTcLOW3P9g_MHsWdzSlmSEoJN39VdNAmcIbz_x1MRTt5r-KdL0GM6B7MASGF1GogPdTXj4qTLr0")' }}>
                             </div>
-                            <div className="text-left">
-                                <span className="block text-sm font-bold mb-0.5">Request Repair</span>
-                                <span className="block text-xs opacity-80">Post job for bidding</span>
-                            </div>
+                            <div className="absolute bottom-0 right-0 h-4 w-4 rounded-full bg-green-500 border-2 border-white dark:border-background-dark"></div>
                         </div>
-                        <span className="material-symbols-outlined">arrow_forward</span>
-                    </button>
-                </div>
-
-                {/* Recent Activity (Placeholder) */}
-                <div>
-                    <h3 className="text-lg font-bold text-text-main dark:text-white mb-4">Recent Activity</h3>
-                    <div className="space-y-3">
-                        <div className="flex items-center gap-4 rounded-xl bg-white dark:bg-card-dark p-4 shadow-sm border border-gray-50 dark:border-gray-800">
-                            <div className="h-10 w-10 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center text-green-600">
-                                <span className="material-symbols-outlined text-lg">check_circle</span>
-                            </div>
-                            <div>
-                                <h4 className="font-bold text-text-main dark:text-white text-sm">Parking Reserved</h4>
-                                <p className="text-xs text-text-sub dark:text-gray-400">Downtown Garage • 2 hrs ago</p>
+                        <div className="flex flex-col justify-center">
+                            <h1 className="text-2xl font-extrabold leading-tight tracking-tight text-text-main dark:text-white">
+                                Hello, {user?.name || 'User'}
+                            </h1>
+                            <div className="mt-1 flex items-start">
+                                <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-0.5 text-xs font-bold uppercase tracking-wide text-primary dark:bg-primary/20 dark:text-primary-300">
+                                    Driver
+                                </span>
                             </div>
                         </div>
                     </div>
+                    <button className="relative rounded-full p-2 text-text-sub hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 transition-colors">
+                        <span className="material-symbols-outlined">notifications</span>
+                        <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-red-500"></span>
+                    </button>
                 </div>
-            </main>
+            </div>
+
+            {/* Quick Actions Grid */}
+            <div className="px-6 py-2">
+                <div className="grid grid-cols-4 gap-4">
+                    <button onClick={() => router.push('/driver/garage')} className="flex flex-col items-center gap-2 group">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white dark:bg-card-dark shadow-sm ring-1 ring-slate-900/5 transition-all group-active:scale-95 group-active:bg-primary/5">
+                            <span className="material-symbols-outlined text-primary text-[24px]">garage</span>
+                        </div>
+                        <span className="text-xs font-medium text-text-sub dark:text-gray-400">Garage</span>
+                    </button>
+                    <button onClick={() => router.push('/driver/history')} className="flex flex-col items-center gap-2 group">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white dark:bg-card-dark shadow-sm ring-1 ring-slate-900/5 transition-all group-active:scale-95 group-active:bg-primary/5">
+                            <span className="material-symbols-outlined text-primary text-[24px]">history</span>
+                        </div>
+                        <span className="text-xs font-medium text-text-sub dark:text-gray-400">History</span>
+                    </button>
+                    <button onClick={() => router.push('/driver/wallet')} className="flex flex-col items-center gap-2 group">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white dark:bg-card-dark shadow-sm ring-1 ring-slate-900/5 transition-all group-active:scale-95 group-active:bg-primary/5">
+                            <span className="material-symbols-outlined text-primary text-[24px]">account_balance_wallet</span>
+                        </div>
+                        <span className="text-xs font-medium text-text-sub dark:text-gray-400">Wallet</span>
+                    </button>
+                    <button onClick={() => router.push('/driver/settings')} className="flex flex-col items-center gap-2 group">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white dark:bg-card-dark shadow-sm ring-1 ring-slate-900/5 transition-all group-active:scale-95 group-active:bg-primary/5">
+                            <span className="material-symbols-outlined text-primary text-[24px]">settings</span>
+                        </div>
+                        <span className="text-xs font-medium text-text-sub dark:text-gray-400">Settings</span>
+                    </button>
+                </div>
+            </div>
+
+            {/* Services Section */}
+            <div className="px-6 pt-6 pb-3">
+                <h3 className="text-text-main dark:text-white tracking-tight text-xl font-bold leading-tight">Services</h3>
+            </div>
+            <div className="flex flex-col gap-4 px-6">
+                <button onClick={() => router.push('/driver/services')} className="group relative flex w-full items-center justify-between overflow-hidden rounded-2xl bg-white dark:bg-card-dark p-1 shadow-soft transition-all hover:shadow-lg active:scale-[0.99]">
+                    <div className="flex h-full flex-grow items-center gap-4 p-4 pr-2">
+                        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-primary/10 dark:bg-primary/20 text-primary transition-transform group-hover:scale-110">
+                            <span className="material-symbols-outlined text-[32px]">car_repair</span>
+                        </div>
+                        <div className="flex flex-col items-start text-left">
+                            <p className="text-lg font-bold leading-tight text-text-main dark:text-white">Find a Mechanic</p>
+                            <p className="text-sm font-medium leading-normal text-text-sub dark:text-gray-400">Roadside help & repair shops</p>
+                        </div>
+                    </div>
+                    <div className="pr-5 text-gray-300 dark:text-gray-600">
+                        <span className="material-symbols-outlined">chevron_right</span>
+                    </div>
+                </button>
+                <button onClick={() => router.push('/driver/auction')} className="group relative flex w-full items-center justify-between overflow-hidden rounded-2xl bg-white dark:bg-card-dark p-1 shadow-soft transition-all hover:shadow-lg active:scale-[0.99]">
+                    <div className="flex h-full flex-grow items-center gap-4 p-4 pr-2">
+                        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-primary/10 dark:bg-primary/20 text-primary transition-transform group-hover:scale-110">
+                            <span className="material-symbols-outlined text-[32px]">gavel</span>
+                        </div>
+                        <div className="flex flex-col items-start text-left">
+                            <p className="text-lg font-bold leading-tight text-text-main dark:text-white">Auction-Repair</p>
+                            <p className="text-sm font-medium leading-normal text-text-sub dark:text-gray-400">Bid on repair services</p>
+                        </div>
+                    </div>
+                    <div className="pr-5 text-gray-300 dark:text-gray-600">
+                        <span className="material-symbols-outlined">chevron_right</span>
+                    </div>
+                </button>
+                <button onClick={() => router.push('/driver/parking')} className="group relative flex w-full items-center justify-between overflow-hidden rounded-2xl bg-white dark:bg-card-dark p-1 shadow-soft transition-all hover:shadow-lg active:scale-[0.99]">
+                    <div className="flex h-full flex-grow items-center gap-4 p-4 pr-2">
+                        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-primary/10 dark:bg-primary/20 text-primary transition-transform group-hover:scale-110">
+                            <span className="material-symbols-outlined text-[32px]">local_parking</span>
+                        </div>
+                        <div className="flex flex-col items-start text-left">
+                            <p className="text-lg font-bold leading-tight text-text-main dark:text-white">Parking</p>
+                            <p className="text-sm font-medium leading-normal text-text-sub dark:text-gray-400">Find spots nearby</p>
+                        </div>
+                    </div>
+                    <div className="pr-5 text-gray-300 dark:text-gray-600">
+                        <span className="material-symbols-outlined">chevron_right</span>
+                    </div>
+                </button>
+            </div>
+            <div className="h-8 w-full"></div>
 
             <BottomNav />
         </div>

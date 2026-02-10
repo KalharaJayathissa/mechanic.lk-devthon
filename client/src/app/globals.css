@@ -18,6 +18,12 @@
   --color-card-light: #FFFFFF;
   --color-card-dark: #2c303b;
 
+  /* Added from User Design */
+  --color-accent: #F2B81F;
+  --color-text-light: #e0e2e6;
+  --color-text-muted: #6b7280;
+  --color-text-muted-dark: #9ca3af;
+
   /* Status Colors */
   --color-status-active-text: #2E7D32;
   --color-status-active-bg: #E8F5E9;
