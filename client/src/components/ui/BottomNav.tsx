@@ -20,7 +20,14 @@ export function BottomNav() {
         }
     }, [pathname]);
 
-    const driverNavItems = [
+    interface NavItem {
+        icon: string;
+        label: string;
+        path: string;
+        isMain?: boolean;
+    }
+
+    const driverNavItems: NavItem[] = [
         { icon: 'home', label: 'Home', path: '/driver/dashboard' },
         { icon: 'car_repair', label: 'Mechanic', path: '/driver/services' },
         { icon: 'gavel', label: 'Auctions', path: '/driver/auction' },
@@ -28,7 +35,7 @@ export function BottomNav() {
         { icon: 'person', label: 'Profile', path: '/driver/profile' },
     ];
 
-    const garageNavItems = [
+    const garageNavItems: NavItem[] = [
         { icon: 'home', label: 'Home', path: '/garage/dashboard' },
         { icon: 'car_repair', label: 'Repairs', path: '/garage/repairs' }, // Repairs / Auctions
         { icon: 'add', label: '', path: '/garage/add', isMain: true }, // Large Plus Button
@@ -36,15 +43,16 @@ export function BottomNav() {
         { icon: 'person', label: 'Profile', path: '/garage/profile' },
     ];
 
-    const parkingNavItems = [
-        { icon: 'local_parking', label: 'Dashboard', path: '/parking-owner/dashboard' },
-        { icon: 'currency_exchange', label: 'Rates', path: '/parking-owner/rates' },
-        { icon: 'history', label: 'History', path: '/parking-owner/history' },
+    const parkingNavItems: NavItem[] = [
+        { icon: 'home', label: 'Home', path: '/parking-owner/dashboard' },
+        { icon: 'receipt_long', label: 'Activity', path: '/parking-owner/activity' },
+        { icon: 'add', label: 'Add', path: '/parking-owner/add', isMain: true },
+        { icon: 'chat_bubble', label: 'Messages', path: '/parking-owner/messages' },
         { icon: 'person', label: 'Profile', path: '/parking-owner/profile' },
     ];
 
     // Decide which items to show
-    let navItems = driverNavItems;
+    let navItems: NavItem[] = driverNavItems;
     if (role === 'garage') navItems = garageNavItems;
     if (role === 'parking-owner') navItems = parkingNavItems;
 
@@ -78,8 +86,8 @@ export function BottomNav() {
                             key={item.path}
                             onClick={() => router.push(item.path)}
                             className={`flex flex-col items-center gap-1.5 transition-colors group ${isActive
-                                    ? 'text-primary dark:text-white'
-                                    : 'text-text-sub hover:text-primary dark:text-gray-400 dark:hover:text-white'
+                                ? 'text-primary dark:text-white'
+                                : 'text-text-sub hover:text-primary dark:text-gray-400 dark:hover:text-white'
                                 }`}
                         >
                             <span className={`material-symbols-outlined text-[26px] transition-transform ${isActive ? 'font-bold' : 'group-hover:scale-110'}`}>
