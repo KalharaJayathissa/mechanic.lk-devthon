@@ -1,10 +1,20 @@
 "use client";
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+
+interface Vehicle {
+    id: string;
+    make: string;
+    model: string;
+    year: string;
+    plate: string;
+}
 
 export default function PostAuctionPage() {
     const router = useRouter();
+    const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+    const [selectedVehicleId, setSelectedVehicleId] = useState('');
     const [formData, setFormData] = useState({
         make: '',
         model: '',
@@ -16,6 +26,23 @@ export default function PostAuctionPage() {
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+
+    useEffect(() => {
+        const stored = localStorage.getItem('driverVehicles');
+        if (stored) {
+            setVehicles(JSON.parse(stored));
+        }
+    }, []);
+
+    const applyVehicle = (vehicle: Vehicle | null) => {
+        if (!vehicle) return;
+        setFormData((prev) => ({
+            ...prev,
+            make: vehicle.make,
+            model: vehicle.model,
+            year: vehicle.year
+        }));
+    };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { id, value } = e.target;
@@ -55,16 +82,16 @@ export default function PostAuctionPage() {
 
         try {
             const data = new FormData();
-            data.append('vehicle[make]', formData.make.split(' ')[0] || formData.make); // Simple split if user types "Toyota Camry"
-            data.append('vehicle[model]', formData.model || formData.make.split(' ').slice(1).join(' '));
-            data.append('vehicle[year]', formData.year);
-            data.append('isDrivable', String(formData.isDrivable));
+            data.append('make', formData.make.split(' ')[0] || formData.make);
+            data.append('model', formData.model || formData.make.split(' ').slice(1).join(' '));
+            data.append('year', formData.year);
+            data.append('drivable', String(formData.isDrivable));
             data.append('description', formData.description);
             // Default values for now as they aren't in the form explicitly yet
             data.append('title', `${formData.year} ${formData.make || 'Vehicle'} Repair`);
 
             formData.images.forEach((image) => {
-                data.append('images', image);
+                data.append('photos', image);
             });
 
             const token = localStorage.getItem('token');
@@ -165,6 +192,27 @@ export default function PostAuctionPage() {
                 <section className="rounded-2xl bg-surface-light dark:bg-surface-dark p-5 shadow-soft">
                     <h3 className="mb-4 text-lg font-bold text-text-main dark:text-text-light">Vehicle Details</h3>
                     <div className="space-y-5">
+                        {/* Garage Selector */}
+                        <div className="group relative">
+                            <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-text-muted dark:text-text-muted-dark">Saved Vehicle</label>
+                            <select
+                                className="w-full rounded-xl border-0 bg-background-light dark:bg-background-dark py-3.5 px-4 text-sm font-medium text-text-main ring-1 ring-inset ring-gray-200 transition-all focus:ring-2 focus:ring-primary dark:text-white dark:ring-gray-700"
+                                value={selectedVehicleId}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+                                    setSelectedVehicleId(value);
+                                    const selected = vehicles.find((v) => v.id === value) || null;
+                                    applyVehicle(selected);
+                                }}
+                            >
+                                <option value="">Choose from garage (optional)</option>
+                                {vehicles.map((vehicle) => (
+                                    <option key={vehicle.id} value={vehicle.id}>
+                                        {vehicle.year} {vehicle.make} {vehicle.model}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
                         {/* Make & Model */}
                         <div className="group relative">
                             <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-text-muted dark:text-text-muted-dark" htmlFor="make">Make & Model</label>
@@ -179,6 +227,17 @@ export default function PostAuctionPage() {
                                     onChange={handleInputChange}
                                 />
                             </div>
+                        </div>
+                        <div className="group relative">
+                            <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-text-muted dark:text-text-muted-dark" htmlFor="model">Model</label>
+                            <input
+                                className="w-full rounded-xl border-0 bg-background-light dark:bg-background-dark py-3.5 px-4 text-sm font-medium text-text-main placeholder-gray-400 ring-1 ring-inset ring-gray-200 transition-all focus:ring-2 focus:ring-primary dark:text-white dark:ring-gray-700 dark:placeholder-gray-600"
+                                id="model"
+                                placeholder="e.g. Camry"
+                                type="text"
+                                value={formData.model}
+                                onChange={handleInputChange}
+                            />
                         </div>
                         {/* Year & Drivable Row */}
                         <div className="flex gap-4">

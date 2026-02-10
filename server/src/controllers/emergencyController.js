@@ -111,9 +111,19 @@ const updateStatus = asyncHandler(async (req, res) => {
     res.json(updatedRequest);
 });
 
+// @desc    Get logged-in user's emergency requests
+// @route   GET /api/emergency/my
+// @access  Private (User)
+const getMyRequests = asyncHandler(async (req, res) => {
+    const requests = await EmergencyRequest.find({ requester: req.user.id })
+        .sort('-createdAt');
+    res.json(requests);
+});
+
 module.exports = {
     createRequest,
     getNearbyRequests,
     acceptRequest,
-    updateStatus
+    updateStatus,
+    getMyRequests
 };

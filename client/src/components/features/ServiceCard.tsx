@@ -10,9 +10,10 @@ interface ServiceCardProps {
     timeEstimate: string; // e.g., "45 mins"
     distance?: string;
     tags?: string[];
+    onBook?: () => void;
 }
 
-export function ServiceCard({ title, providerName, price, rating, timeEstimate, distance, tags }: ServiceCardProps) {
+export function ServiceCard({ title, providerName, price, rating, timeEstimate, distance, tags, onBook }: ServiceCardProps) {
     return (
         <Card className="flex flex-col h-full hover:border-primary/50 border-2 border-transparent">
             <div className="flex justify-between items-start mb-3">
@@ -39,7 +40,7 @@ export function ServiceCard({ title, providerName, price, rating, timeEstimate, 
                     <span className="text-2xl font-black text-primary">${price}</span>
                     <p className="text-xs text-text-sub font-medium">{timeEstimate} • {distance}</p>
                 </div>
-                <Button size="sm" rightIcon="arrow_forward">
+                <Button size="sm" rightIcon="arrow_forward" onClick={onBook}>
                     Book
                 </Button>
             </div>

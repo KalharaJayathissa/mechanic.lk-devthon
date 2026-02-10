@@ -75,6 +75,26 @@ const getMe = asyncHandler(async (req, res) => {
     res.status(200).json(req.user);
 });
 
+// @desc    Update user profile
+// @route   PUT /api/users/profile
+// @access  Private
+const updateProfile = asyncHandler(async (req, res) => {
+    const { name, phone, avatarUrl } = req.body;
+
+    const user = await User.findById(req.user.id);
+    if (!user) {
+        res.status(404);
+        throw new Error('User not found');
+    }
+
+    user.name = name || user.name;
+    user.phone = phone || user.phone;
+    user.avatarUrl = avatarUrl || user.avatarUrl;
+
+    const updated = await user.save();
+    res.json(updated);
+});
+
 // Generate JWT
 const generateToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -86,4 +106,5 @@ module.exports = {
     registerUser,
     loginUser,
     getMe,
+    updateProfile,
 };

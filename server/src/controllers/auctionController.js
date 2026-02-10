@@ -25,7 +25,10 @@ const upload = multer({
         }
         cb(new Error('Only images are allowed'));
     }
-}).array('photos', 5); // Allow up to 5 photos
+}).fields([
+    { name: 'photos', maxCount: 5 },
+    { name: 'images', maxCount: 5 }
+]);
 
 // @desc    Create new auction
 // @route   POST /api/auctions
@@ -40,14 +43,21 @@ const createAuction = asyncHandler(async (req, res) => {
         console.log('Multer processing complete. Files:', req.files?.length);
         console.log('Auction data:', req.body);
 
-        const { make, model, year, drivable, description } = req.body;
+        const make = req.body.make || req.body['vehicle[make]'] || req.body['vehicle.make'];
+        const model = req.body.model || req.body['vehicle[model]'] || req.body['vehicle.model'] || 'Unknown';
+        const year = req.body.year || req.body['vehicle[year]'] || req.body['vehicle.year'];
+        const description = req.body.description || req.body['vehicle[description]'];
+        const rawDrivable = req.body.drivable ?? req.body.isDrivable ?? req.body['vehicle[drivable]'];
 
         // Ensure user is authorized (check middleware if needed, here Assuming req.user exists)
         if (!req.user) {
             return res.status(401).json({ message: 'Not authorized' });
         }
 
-        const photoPaths = req.files ? req.files.map(file => `/uploads/${file.filename}`) : [];
+        const uploadedPhotos = []
+            .concat(req.files?.photos || [])
+            .concat(req.files?.images || []);
+        const photoPaths = uploadedPhotos.map(file => `/uploads/${file.filename}`);
 
         // Set endsAt to 7 days from now by default if not provided
         const endsAt = new Date();
@@ -59,7 +69,7 @@ const createAuction = asyncHandler(async (req, res) => {
                 make,
                 model,
                 year,
-                drivable: drivable === 'true' // Convert string 'true' which comes from form-data to boolean
+                drivable: rawDrivable === 'true' || rawDrivable === true
             },
             description,
             photos: photoPaths,
@@ -135,10 +145,70 @@ const getDriverAuctions = asyncHandler(async (req, res) => {
     res.json(auctions);
 });
 
+// @desc    Accept a bid for an auction
+// @route   PUT /api/auctions/:id/accept-bid
+// @access  Private (Driver)
+const acceptBid = asyncHandler(async (req, res) => {
+    const { bidId } = req.body;
+    const auction = await Auction.findById(req.params.id);
+
+    if (!auction) {
+        res.status(404);
+        throw new Error('Auction not found');
+    }
+
+    if (auction.user.toString() !== req.user._id.toString()) {
+        res.status(403);
+        throw new Error('Not authorized to accept bids for this auction');
+    }
+
+    const bidExists = auction.bids.some((bid) => bid._id.toString() === bidId);
+    if (!bidExists) {
+        res.status(400);
+        throw new Error('Bid not found');
+    }
+
+    auction.acceptedBid = bidId;
+    auction.status = 'Accepted';
+    const updated = await auction.save();
+
+    res.json(updated);
+});
+
+// @desc    Update auction status
+// @route   PUT /api/auctions/:id/status
+// @access  Private (Driver)
+const updateAuctionStatus = asyncHandler(async (req, res) => {
+    const { status } = req.body;
+    const auction = await Auction.findById(req.params.id);
+
+    if (!auction) {
+        res.status(404);
+        throw new Error('Auction not found');
+    }
+
+    if (auction.user.toString() !== req.user._id.toString()) {
+        res.status(403);
+        throw new Error('Not authorized to update this auction');
+    }
+
+    const allowedStatuses = ['Active', 'Accepted', 'Completed', 'Expired', 'Cancelled'];
+    if (!allowedStatuses.includes(status)) {
+        res.status(400);
+        throw new Error('Invalid status');
+    }
+
+    auction.status = status;
+    const updated = await auction.save();
+    res.json(updated);
+});
+
 module.exports = {
     createAuction,
     getAuctions,
     getAuctionById,
     placeBid,
-    getDriverAuctions
+    getDriverAuctions,
+    acceptBid,
+    updateAuctionStatus
 };

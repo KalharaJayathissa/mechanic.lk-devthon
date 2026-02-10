@@ -16,6 +16,13 @@ export default function ServicesPage() {
     const [mechanics, setMechanics] = useState<any[]>([]);
     const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
     const [loading, setLoading] = useState(true);
+    const [selectedMechanic, setSelectedMechanic] = useState<any | null>(null);
+    const [issueDescription, setIssueDescription] = useState('');
+    const [vehicleDetails, setVehicleDetails] = useState({ make: '', model: '', year: '' });
+    const [vehicles, setVehicles] = useState<{ id: string; make: string; model: string; year: string; plate: string }[]>([]);
+    const [selectedVehicleId, setSelectedVehicleId] = useState('');
+    const [requestLoading, setRequestLoading] = useState(false);
+    const [requestError, setRequestError] = useState('');
 
     useEffect(() => {
         // Get Location
@@ -63,6 +70,22 @@ export default function ServicesPage() {
         }
     }, [userLocation]);
 
+    useEffect(() => {
+        const stored = localStorage.getItem('driverVehicles');
+        if (stored) {
+            setVehicles(JSON.parse(stored));
+        }
+    }, []);
+
+    const applyVehicle = (vehicle: { make: string; model: string; year: string } | null) => {
+        if (!vehicle) return;
+        setVehicleDetails({
+            make: vehicle.make,
+            model: vehicle.model,
+            year: vehicle.year
+        });
+    };
+
     const mapMarkers = mechanics.map(mech => ({
         id: mech._id,
         position: [mech.location.coordinates[1], mech.location.coordinates[0]] as [number, number],
@@ -70,6 +93,59 @@ export default function ServicesPage() {
         description: mech.description,
         type: 'mechanic' as const
     }));
+
+    const handleOpenRequest = (mechanic: any) => {
+        setSelectedMechanic(mechanic);
+        setIssueDescription('');
+        setVehicleDetails({ make: '', model: '', year: '' });
+        setSelectedVehicleId('');
+        setRequestError('');
+    };
+
+    const handleCreateRequest = async () => {
+        if (!selectedMechanic?.user?._id) {
+            setRequestError('Mechanic info not available.');
+            return;
+        }
+
+        if (!issueDescription.trim()) {
+            setRequestError('Please describe the issue.');
+            return;
+        }
+
+        setRequestLoading(true);
+        setRequestError('');
+
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch('http://localhost:5000/api/service-requests', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    mechanicUser: selectedMechanic.user._id,
+                    vehicleDetails: {
+                        make: vehicleDetails.make,
+                        model: vehicleDetails.model,
+                        year: vehicleDetails.year ? Number(vehicleDetails.year) : undefined
+                    },
+                    issueDescription,
+                    location: userLocation ? { type: 'Point', coordinates: [userLocation[1], userLocation[0]] } : undefined
+                })
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                throw new Error(data.message || 'Failed to create request');
+            }
+            setSelectedMechanic(null);
+        } catch (err: any) {
+            setRequestError(err.message || 'Something went wrong');
+        } finally {
+            setRequestLoading(false);
+        }
+    };
 
     return (
         <div className="relative h-screen w-full bg-background-light dark:bg-background-dark overflow-hidden flex flex-col">
@@ -140,12 +216,92 @@ export default function ServicesPage() {
                                     timeEstimate={mech.services?.[0]?.estimatedTime ? `${mech.services[0].estimatedTime} mins` : '15 mins'}
                                     distance="2.5km" // Placeholder for now
                                     tags={mech.services?.map((s: any) => s.name).slice(0, 3)}
+                                    onBook={() => handleOpenRequest(mech)}
                                 />
                             ))}
                         </div>
                     )}
                 </div>
             </div>
+
+            {selectedMechanic && (
+                <div className="fixed inset-0 z-60 flex items-end justify-center bg-black/40 p-4">
+                    <div className="w-full max-w-lg rounded-2xl bg-white dark:bg-card-dark p-5 shadow-xl">
+                        <div className="flex items-start justify-between mb-3">
+                            <div>
+                                <h3 className="text-lg font-bold text-text-main dark:text-white">Request Service</h3>
+                                <p className="text-sm text-text-sub dark:text-gray-400">{selectedMechanic.businessName}</p>
+                            </div>
+                            <button
+                                onClick={() => setSelectedMechanic(null)}
+                                className="rounded-full p-2 text-text-sub hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+                            >
+                                <span className="material-symbols-outlined">close</span>
+                            </button>
+                        </div>
+
+                        {requestError && (
+                            <div className="mb-3 rounded-xl bg-red-100 text-red-600 p-2 text-xs font-bold">{requestError}</div>
+                        )}
+
+                        <div className="mb-3">
+                            <label className="block text-xs font-bold uppercase tracking-wide text-text-sub mb-2">Saved Vehicle</label>
+                            <select
+                                className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-transparent px-3 py-2 text-sm"
+                                value={selectedVehicleId}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+                                    setSelectedVehicleId(value);
+                                    const selected = vehicles.find((v) => v.id === value) || null;
+                                    applyVehicle(selected);
+                                }}
+                            >
+                                <option value="">Choose from garage (optional)</option>
+                                {vehicles.map((vehicle) => (
+                                    <option key={vehicle.id} value={vehicle.id}>
+                                        {vehicle.year} {vehicle.make} {vehicle.model}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3 mb-3">
+                            <input
+                                className="rounded-xl border border-gray-200 dark:border-gray-700 bg-transparent px-3 py-2 text-sm"
+                                placeholder="Make"
+                                value={vehicleDetails.make}
+                                onChange={(e) => setVehicleDetails({ ...vehicleDetails, make: e.target.value })}
+                            />
+                            <input
+                                className="rounded-xl border border-gray-200 dark:border-gray-700 bg-transparent px-3 py-2 text-sm"
+                                placeholder="Model"
+                                value={vehicleDetails.model}
+                                onChange={(e) => setVehicleDetails({ ...vehicleDetails, model: e.target.value })}
+                            />
+                            <input
+                                className="rounded-xl border border-gray-200 dark:border-gray-700 bg-transparent px-3 py-2 text-sm"
+                                placeholder="Year"
+                                value={vehicleDetails.year}
+                                onChange={(e) => setVehicleDetails({ ...vehicleDetails, year: e.target.value })}
+                            />
+                        </div>
+                        <textarea
+                            className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-transparent px-3 py-2 text-sm"
+                            rows={3}
+                            placeholder="Describe the issue"
+                            value={issueDescription}
+                            onChange={(e) => setIssueDescription(e.target.value)}
+                        />
+                        <button
+                            onClick={handleCreateRequest}
+                            disabled={requestLoading}
+                            className="mt-3 w-full rounded-xl bg-primary py-3 text-sm font-bold text-white shadow-glow hover:bg-primary/90 disabled:opacity-60"
+                        >
+                            {requestLoading ? 'Sending request...' : 'Send Request'}
+                        </button>
+                    </div>
+                </div>
+            )}
 
             <BottomNav />
         </div>

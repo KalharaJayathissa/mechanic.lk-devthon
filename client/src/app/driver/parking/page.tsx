@@ -16,6 +16,10 @@ export default function ParkingPage() {
     const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
     const [spots, setSpots] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [selectedSpot, setSelectedSpot] = useState<any | null>(null);
+    const [hours, setHours] = useState('1');
+    const [bookingLoading, setBookingLoading] = useState(false);
+    const [bookingError, setBookingError] = useState('');
 
     // Get User Location
     useEffect(() => {
@@ -75,6 +79,46 @@ export default function ParkingPage() {
         type: 'parking' as const
     }));
 
+    const handleOpenBooking = (spot: any) => {
+        setSelectedSpot(spot);
+        setHours('1');
+        setBookingError('');
+    };
+
+    const handleCreateBooking = async () => {
+        if (!selectedSpot?._id) return;
+        setBookingLoading(true);
+        setBookingError('');
+
+        try {
+            const token = localStorage.getItem('token');
+            const startTime = new Date();
+            const endTime = new Date(startTime.getTime() + Number(hours) * 60 * 60 * 1000);
+
+            const res = await fetch('http://localhost:5000/api/bookings/parking', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    parkingSpot: selectedSpot._id,
+                    startTime,
+                    endTime
+                })
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                throw new Error(data.message || 'Failed to reserve');
+            }
+            setSelectedSpot(null);
+        } catch (err: any) {
+            setBookingError(err.message || 'Something went wrong');
+        } finally {
+            setBookingLoading(false);
+        }
+    };
+
     return (
         <div className="relative h-screen w-full bg-background-light dark:bg-background-dark overflow-hidden flex flex-col">
             {/* Header */}
@@ -124,7 +168,7 @@ export default function ParkingPage() {
                 </div>
 
                 {/* List View */}
-                <div className={`absolute inset-0 overflow-y-auto px-6 pb-24 transition-opacity duration-300 ${viewMode === 'list' ? 'opacity-100 z-10 bg-background-light dark:bg-background-dark' : 'opacity-0 z-0 pointer-events-none'}`}>
+                <div className={`absolute inset-0 overflow-y-auto px-6 pb-32 transition-opacity duration-300 ${viewMode === 'list' ? 'opacity-100 z-10 bg-background-light dark:bg-background-dark' : 'opacity-0 z-0 pointer-events-none'}`}>
                     {loading ? (
                         <p className="text-center text-gray-500 mt-10">Finding spots...</p>
                     ) : spots.length === 0 ? (
@@ -142,13 +186,54 @@ export default function ParkingPage() {
                                     pricePerHour={spot.pricePerHour}
                                     distance="0.5km" // Calculate real distance if needed
                                     vehicleTypes={spot.vehicleTypes}
-                                    onBook={() => console.log('Book', spot._id)}
+                                    onBook={() => handleOpenBooking(spot)}
                                 />
                             ))}
                         </div>
                     )}
                 </div>
             </div>
+
+            {selectedSpot && (
+                <div className="fixed inset-0 z-60 flex items-end justify-center bg-black/40 p-4">
+                    <div className="w-full max-w-lg rounded-2xl bg-white dark:bg-card-dark p-5 shadow-xl">
+                        <div className="flex items-start justify-between mb-3">
+                            <div>
+                                <h3 className="text-lg font-bold text-text-main dark:text-white">Reserve Spot</h3>
+                                <p className="text-sm text-text-sub dark:text-gray-400">{selectedSpot.title}</p>
+                            </div>
+                            <button
+                                onClick={() => setSelectedSpot(null)}
+                                className="rounded-full p-2 text-text-sub hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+                            >
+                                <span className="material-symbols-outlined">close</span>
+                            </button>
+                        </div>
+
+                        {bookingError && (
+                            <div className="mb-3 rounded-xl bg-red-100 text-red-600 p-2 text-xs font-bold">{bookingError}</div>
+                        )}
+
+                        <div className="flex items-center gap-3">
+                            <label className="text-sm font-bold text-text-main dark:text-white">Hours</label>
+                            <input
+                                type="number"
+                                min="1"
+                                className="w-20 rounded-xl border border-gray-200 dark:border-gray-700 bg-transparent px-3 py-2 text-sm"
+                                value={hours}
+                                onChange={(e) => setHours(e.target.value)}
+                            />
+                        </div>
+                        <button
+                            onClick={handleCreateBooking}
+                            disabled={bookingLoading}
+                            className="mt-3 w-full rounded-xl bg-primary py-3 text-sm font-bold text-white shadow-glow hover:bg-primary/90 disabled:opacity-60"
+                        >
+                            {bookingLoading ? 'Reserving...' : 'Reserve Now'}
+                        </button>
+                    </div>
+                </div>
+            )}
 
             <BottomNav />
         </div>

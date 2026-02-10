@@ -3,6 +3,8 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const fs = require('fs');
+const path = require('path');
 const connectDB = require('./config/db');
 
 // Load env vars
@@ -11,10 +13,17 @@ dotenv.config();
 // Connect to database
 connectDB();
 
+const uploadsDir = path.join(__dirname, '..', 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
 const app = express();
 
 // Middleware
-app.use(helmet());
+app.use(helmet({
+    crossOriginResourcePolicy: { policy: 'cross-origin' }
+}));
 app.use(cors());
 app.use(express.json());
 app.use(morgan('dev'));
@@ -25,6 +34,9 @@ app.use('/api/mechanics', require('./routes/mechanicRoutes'));
 app.use('/api/emergency', require('./routes/emergencyRoutes'));
 app.use('/api/parking', require('./routes/parkingRoutes'));
 app.use('/api/auctions', require('./routes/auctionRoutes'));
+app.use('/api/service-requests', require('./routes/serviceRequestRoutes'));
+app.use('/api/bookings', require('./routes/bookingRoutes'));
+app.use('/api/payments', require('./routes/paymentRoutes'));
 
 app.use('/uploads', express.static('uploads'));
 

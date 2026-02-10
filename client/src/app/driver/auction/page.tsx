@@ -63,9 +63,9 @@ export default function DriverAuctionPage() {
                                 <h3 className="font-bold text-text-main dark:text-white text-lg">
                                     {auction.vehicle?.year} {auction.vehicle?.make} {auction.vehicle?.model}
                                 </h3>
-                                <span className={`px-2 py-1 rounded-md text-xs font-bold ${auction.status === 'Open' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-600'
+                                <span className={`px-2 py-1 rounded-md text-xs font-bold ${auction.status === 'Active' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-600'
                                     }`}>
-                                    {auction.status}
+                                    {auction.status === 'Active' ? 'Open' : auction.status}
                                 </span>
                             </div>
                             <p className="text-sm text-text-sub dark:text-gray-400 line-clamp-2 mb-4">

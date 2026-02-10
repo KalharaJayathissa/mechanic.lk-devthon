@@ -21,8 +21,11 @@ const auctionSchema = new mongoose.Schema({
     }],
     status: {
         type: String,
-        enum: ['Active', 'Completed', 'Expired', 'Cancelled'],
+        enum: ['Active', 'Accepted', 'Completed', 'Expired', 'Cancelled'],
         default: 'Active'
+    },
+    acceptedBid: {
+        type: mongoose.Schema.Types.ObjectId
     },
     endsAt: {
         type: Date,
